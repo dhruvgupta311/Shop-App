@@ -31,9 +31,10 @@ class ProductItem extends StatelessWidget {
             fit: BoxFit.cover
             ),
         ),
-          footer: GridTileBar(
+          footer: GridTileBar( 
               backgroundColor: Colors.black87,
-               leading: IconButton(
+               leading: Consumer<Product>(
+                builder :(ctx,product,_)=> IconButton(
                 onPressed: () {
                   product.toogleFavoriteStatus();
                 },
@@ -42,6 +43,7 @@ class ProductItem extends StatelessWidget {
                 ),
                 color: Colors.red,
               ),
+            ),
               trailing:
                   IconButton(
                     onPressed: () {}, 
@@ -57,3 +59,8 @@ class ProductItem extends StatelessWidget {
     );
   }
 }
+// consumer is a widegt taken from the provider package which always listen to the changes 
+//whereas when we declared product as listen false we declare that it will not listen to the 
+// changes occurs so we only wrap isfavorite icon because it only needs to be rebuiltd
+//when any vhanges occurs so we wrap that in consumer   
+// thing which will be written in child of consumer widget will never changes
