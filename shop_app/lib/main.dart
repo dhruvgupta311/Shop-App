@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import './screen/product_detail_screen.dart';
 import './screen/product_overview_screen.dart';
 import './provider/products_provider.dart';
+import './provider/cart.dart';
 
 void main() {
   runApp(MyApp());
@@ -15,9 +16,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<Products>.value(
-          value: Products(),
+        ChangeNotifierProvider(
+          create:(ctx)=> Products(),
         ),
+        ChangeNotifierProvider(
+          create:(ctx)=> Cart(),
+        )
       ],
 
       //  This callback function is called when the ChangeNotifierProvider widget is first built, and it provides a new instance of Products to the widget tree.
