@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
-import 'package:shop_app/provider/products_provider.dart';
 import '../screen/product_detail_screen.dart';
 import 'package:provider/provider.dart';
 import '../provider/product.dart';
+import '../provider/cart.dart';
 
 class ProductItem extends StatelessWidget {
   // final String id;
@@ -18,6 +16,7 @@ class ProductItem extends StatelessWidget {
     final product=Provider.of<Product>(context,listen: false);
     /*ye product class ka naaam h in angular brackets in prducty.dart*/ 
     //product ke andar product.dart ki sari info by above syntax provided by provider package
+    final cart=Provider.of<Cart>(context,listen: false);
     return ClipRRect( // clipreact is widget which fits perfectly in grid or any other widget
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
@@ -46,7 +45,9 @@ class ProductItem extends StatelessWidget {
             ),
               trailing:
                   IconButton(
-                    onPressed: () {}, 
+                    onPressed: () {
+                      cart.addItems(product.id, product.price, product.title);
+                    }, 
                     icon: Icon(Icons.shopping_cart),
                     color: Color.fromARGB(255, 252, 252, 252),
                     ),
