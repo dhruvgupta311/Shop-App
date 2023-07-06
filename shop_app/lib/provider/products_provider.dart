@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import './product.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class Products with ChangeNotifier {
   final List<Product> _items = [
@@ -68,7 +71,7 @@ class Products with ChangeNotifier {
   //   _showFavoriteOnly=false;
   //     notifyListeners();
   // }
-  
+
   void updateProduct(String id, Product newProduct) {
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
     if (prodIndex >= 0) {
@@ -79,9 +82,33 @@ class Products with ChangeNotifier {
     }
   }
 
+  void delete(String id) {
+    _items.removeWhere((prod) => prod.id == id);
+    notifyListeners();
+  }
 
   void addProduct(Product product) {
-    // _items.add();
+    const url =
+        'https://shopapp-89b85-default-rtdb.firebaseio.com/products_provider.json';
+    http.post(
+      Uri.parse(url),
+      body: json.encode({
+        'title': product.title,
+        'description': product.description,
+        'imageUrl': product.imageUrl,
+        'price': product.price,
+        'isFavorite': product.isFavorite,
+      }),
+    );
+    //_items.add(product);
+    final newProduct = Product(
+      id: DateTime.now().toString(),
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      imageUrl: product.imageUrl,
+    );
+    _items.add(newProduct);
     notifyListeners();
   }
 }
