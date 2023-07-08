@@ -95,12 +95,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
     });
     if (_editedProduct.id != null) {
       print('edit: ${_editedProduct.id}');
-      Provider.of<Products>(context, listen: false)
+     await Provider.of<Products>(context, listen: false)
           .updateProduct(_editedProduct.id!, _editedProduct);
-      setState(() {
-        isLoading = false;
-      });
-      Navigator.of(context).pop();
+     
     } else {
       try {
         await Provider.of<Products>(context, listen: false)
@@ -121,14 +118,17 @@ class _EditProductScreenState extends State<EditProductScreen> {
             ],
           ),
         );
-      } finally {
-        setState(() {
-          isLoading = false;
-        });
-        Navigator.of(context).pop();
-        // navigator will be caled only when this whole will finsh
+      // } finally {
+      //   setState(() {
+      //     isLoading = false;
+      //   });
       }
+        // navigator will be caled only when this whole will finsh
     }
+       setState(() {
+        isLoading = false;
+      });
+      Navigator.of(context).pop();
 
     // ignore: unnecessary_null_comparison
   }
