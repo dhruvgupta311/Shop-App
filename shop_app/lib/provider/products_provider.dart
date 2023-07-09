@@ -95,26 +95,29 @@ class Products with ChangeNotifier {
     final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     var existingProduct = _items[existingProductIndex] as Product?;
     
-     final response = await http.delete(Uri.parse(url));
-     print(response.statusCode);
-    if (response.statusCode >=500) {
+      _items.removeAt(existingProductIndex);
+    notifyListeners();
+    final response = await http.delete(Uri.parse(url));
+    if (response.statusCode >= 400) {
       _items.insert(existingProductIndex, existingProduct!);
       notifyListeners();
       throw HttpException('Could not delete product.');
     }
-    _items.removeWhere((prod) => prod.id == id);
-    notifyListeners();
-    existingProduct=null;
+    existingProduct = null;
     }
+    
   Future<void> fetchAndSetProducts() async {
     const url = 'https://shopapp-89b85-default-rtdb.firebaseio.com/products_provider.json';
     try {
       final response = await http.get(Uri.parse(url));
-       final extractedData = json.decode(response.body) as Map<String, dynamic>;
-       final List<Product> loadedProducts = [];
+      final extractedData = json.decode(response.body) as Map<String, dynamic>;
+      if(extractedData==null){
+        return;
+      }
+      final List<Product> loadedProducts = [];
       // ab kya hoga ki jo bhi data ase me product h uske liye loop chalega jisme prodID wounique id h jo
       // firebase ka realtime database prrovide krwa rha h
-      extractedData.forEach((prodId, prodData) {
+      extractedData.forEach((prodId, prodData){
         loadedProducts.add(Product(
           id: prodId,
           title: prodData['title'],
@@ -125,9 +128,9 @@ class Products with ChangeNotifier {
         ));
       });
       //print('object');
-      _items=loadedProducts ;
+      _items=loadedProducts;
       notifyListeners();
-    } catch (error) {
+    }catch (error){
       throw (error);
     }
   }
