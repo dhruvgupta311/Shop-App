@@ -36,20 +36,21 @@ class MyApp extends StatelessWidget {
       ],
 
       //  This callback function is called when the ChangeNotifierProvider widget is first built, and it provides a new instance of Products to the widget tree.
-      child: MaterialApp(
+      child: Consumer<Auth>(builder: (ctx, auth, _) => MaterialApp(
           title: 'Flutter Demo',
           theme: ThemeData(
             primarySwatch: Colors.deepPurple,
             fontFamily: 'Raleway',
           ),
-          home: AuthScreen(),//ProductDetailScreen(),
+          home: auth.isAuth ? ProductsOverviewScreen() : AuthScreen(),//ProductDetailScreen(),
           routes: {
             ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
             CartScreen.routeName:(ctx)=>CartScreen(),
             OrdersScreen.routeName:(ctx)=>OrdersScreen(),
             UserProductsScreen.routeName:(ctx)=>UserProductsScreen(),
             EditProductScreen.routeName:(ctx)=>EditProductScreen(),
-          }),
+          },),
+          ), 
     );
     
   }

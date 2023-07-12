@@ -13,18 +13,16 @@ class Auth with ChangeNotifier {
   String? _userId;
   Timer? _authTimer;
 
-  // bool get isAuth {
-  //   return token != null;
-  // }
+  bool get isAuth {
+    return token != null;
+  }
 
-  // String? get token {
-  //   if (_expiryDate != null &&
-  //       _expiryDate!.isAfter(DateTime.now()) &&
-  //       _token != null) {
-  //     return _token;
-  //   }
-  //   return null;
-  // }
+  String? get token {
+    if (_expiryDate != null && _expiryDate!.isAfter(DateTime.now()) && _token != null){
+      return _token;
+    }
+    return null;
+  }
 
   // String? get userId {
   //   return _userId;
@@ -87,10 +85,30 @@ class Auth with ChangeNotifier {
         ),
       );
        final responseData = json.decode(response.body);
-      print(responseData);
+      // print(responseData);
       if (responseData['error'] != null) {
         throw HttpException(responseData['error']['message']);
       }
+       _token = responseData['idToken'];
+      _userId = responseData['localId'];
+       _expiryDate = DateTime.now().add(
+        Duration(
+          seconds: int.parse(
+            responseData['expiresIn'],
+          ),
+        ),
+      );
+      // _autoLogout();
+      notifyListeners();
+      // final prefs = await SharedPreferences.getInstance();
+      // final userData = json.encode(
+      //   {
+      //     'token': _token,
+      //     'userId': _userId,
+      //     'expiryDate': _expiryDate!.toIso8601String(),
+      //   },
+      // );
+      // prefs.setString('userData', userData);
       }catch(error){
         throw error;
       }
