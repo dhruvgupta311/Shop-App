@@ -1,5 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../provider/auth.dart';
+import 'package:provider/provider.dart';
+import '../models/http_exception.dart';
+
 
 enum AuthMode { Signup, Login }
 
@@ -46,7 +50,7 @@ class AuthScreen extends StatelessWidget {
                       // ..translate(-10.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
-                        color: Colors.deepOrange.shade900,
+                        color: const Color.fromARGB(255, 213, 86, 47),
                         boxShadow: [
                           BoxShadow(
                             blurRadius: 8,
@@ -100,7 +104,23 @@ class _AuthCardState extends State<AuthCard> {
   var _isLoading = false;
   final _passwordController = TextEditingController();
 
-  void _submit() {
+  void _showErrorDialog(String message){
+    showDialog(
+      context:context,
+      builder: (ctx) =>AlertDialog(
+        title:Text('An Error Occurred'),
+        content: Text(message),
+        actions: [
+          OutlinedButton(onPressed: (){
+            Navigator.of(context).pop();
+            }, child: Text('Okay!'),  
+           )
+        ],
+      )
+      );
+  }
+
+  Future<void> _submit() async{
     if (!_formKey.currentState!.validate()) {
       // Invalid!
       return;
@@ -109,10 +129,32 @@ class _AuthCardState extends State<AuthCard> {
     setState(() {
       _isLoading = true;
     });
+    try{
     if (_authMode == AuthMode.Login) {
+      await Provider.of<Auth>(context,listen: false).login(_authData['email']!, _authData['password']!);
       // Log user in
     } else {
       // Sign user up
+     await Provider.of<Auth>(context,listen: false).signup(_authData['email']!, _authData['password']!);
+    }
+    } on HttpException catch(error){
+      var errorMessage='Authentication Failed!';
+        if(error.toString().contains('EMAIL_EXISTS')){
+          errorMessage='Email is already in use';
+        }
+        else if(error.toString().contains('INVALID_EMAIL')){
+          errorMessage='Email is Invalid';
+        }
+        else if(error.toString().contains('WEAK_PASSWORD')){
+          errorMessage='Make your password strong';
+        }
+         else if(error.toString().contains('INVALID_PASSWORD')){
+          errorMessage='Incorrect Password';
+        }
+        _showErrorDialog(errorMessage);
+    }catch(error){
+      var errorMessage='Could not authenticate you';
+      _showErrorDialog(errorMessage);
     }
     setState(() {
       _isLoading = false;
@@ -158,7 +200,6 @@ class _AuthCardState extends State<AuthCard> {
                       return 'Invalid email!';
                     }
                     return null;
-                    return null;
                   },
                   onSaved: (value) {
                     _authData['email'] = value!;
@@ -168,10 +209,11 @@ class _AuthCardState extends State<AuthCard> {
                   decoration: InputDecoration(labelText: 'Password'),
                   obscureText: true,
                   controller: _passwordController,
-                  validator: (value) {
-                    if (value!.isEmpty || value!.length < 5) {
+                  validator: (value){
+                    if (value!.isEmpty || value.length < 5) {
                       return 'Password is too short!';
                     }
+                    return null;
                   },
                   onSaved: (value) {
                     _authData['password'] = value!;
@@ -187,11 +229,12 @@ class _AuthCardState extends State<AuthCard> {
                             if (value != _passwordController.text) {
                               return 'Passwords do not match!';
                             }
+                            return null;
                           }
                         : null,
                   ),
                 SizedBox(
-                  height: 20,
+                  height: 30,
                 ),
                 if (_isLoading)
                   CircularProgressIndicator()
