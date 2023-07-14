@@ -3,6 +3,7 @@ import '../screen/product_detail_screen.dart';
 import 'package:provider/provider.dart';
 import '../provider/product.dart';
 import '../provider/cart.dart';
+import '../provider/auth.dart';
 
 class ProductItem extends StatelessWidget {
   // final String id;
@@ -17,6 +18,7 @@ class ProductItem extends StatelessWidget {
     /*ye product class ka naaam h in angular brackets in prducty.dart*/
     //product ke andar product.dart ki sari info by above syntax provided by provider package
     final cart = Provider.of<Cart>(context, listen: false);
+    final authData=Provider.of<Auth>(context,listen: false);
     return ClipRRect(
       // clipreact is widget which fits perfectly in grid or any other widget
       borderRadius: BorderRadius.circular(10),
@@ -35,7 +37,7 @@ class ProductItem extends StatelessWidget {
           leading: Consumer<Product>(
             builder: (ctx, product, _) => IconButton(
               onPressed: () {
-                product.toogleFavoriteStatus();
+                product.toogleFavoriteStatus(authData.token.toString(),authData.userId.toString());
               },
               icon: Icon(
                 product.isFavorite ? Icons.favorite : Icons.favorite_border,

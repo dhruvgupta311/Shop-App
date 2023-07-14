@@ -17,17 +17,17 @@ class Product with ChangeNotifier {
     required this.imageUrl,
     this.isFavorite = false,
   });
-   Future<void> toogleFavoriteStatus() async {
+   Future<void> toogleFavoriteStatus(String token,String userId) async {
     final oldStatus = isFavorite;
     isFavorite = !isFavorite;
     notifyListeners();
-    final url = 'https://shopapp-89b85-default-rtdb.firebaseio.com/products_provider/$id.json';
+    final url = 'https://shopapp-89b85-default-rtdb.firebaseio.com/userFavorites/$userId/$id.json?auth=$token';
     try {
-      final response =await http.patch(
+      final response =await http.put(
         Uri.parse(url),
-        body: json.encode({
-          'isFavorite': isFavorite,
-        }),
+        body: json.encode(
+          isFavorite,
+        ),
       );
       print(response.statusCode);
       if(response.statusCode>=400){

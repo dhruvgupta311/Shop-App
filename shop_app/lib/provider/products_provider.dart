@@ -40,6 +40,9 @@ class Products with ChangeNotifier {
     ),
   ];
   // var _showFavoriteOnly=false;
+  final String authToken;
+  final String userId;
+  Products(this.authToken,this.userId,this._items);
 
   List<Product> get items {
     // if(_showFavoriteOnly){
@@ -75,7 +78,7 @@ class Products with ChangeNotifier {
   Future<void> updateProduct(String id, Product newProduct) async {
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
     if (prodIndex >= 0) {
-       final url = 'https://shopapp-89b85-default-rtdb.firebaseio.com/products_provider/$id.json';
+       final url = 'https://shopapp-89b85-default-rtdb.firebaseio.com/products_provider/$id.json?auth=$authToken';
       await http.patch(Uri.parse(url),
           body: json.encode({
             'title': newProduct.title,
@@ -91,7 +94,7 @@ class Products with ChangeNotifier {
   }
 
  Future<void> delete(String id) async {
-  final url = 'https://shopapp-89b85-default-rtdb.firebaseio.com/products_provider/$id.json';
+  final url = 'https://shopapp-89b85-default-rtdb.firebaseio.com/products_provider/$id.json?auth=$authToken';
     final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     var existingProduct = _items[existingProductIndex] as Product?;
     
@@ -106,14 +109,18 @@ class Products with ChangeNotifier {
     existingProduct = null;
     }
     
-  Future<void> fetchAndSetProducts() async {
-    const url = 'https://shopapp-89b85-default-rtdb.firebaseio.com/products_provider.json';
+  Future<void> fetchAndSetProducts([bool filterByUser =false]) async {
+    final filterString=filterByUser? 'orderBy="creatorId"&equalTo="$userId"':'';
+    var url = 'https://shopapp-89b85-default-rtdb.firebaseio.com/products_provider.json?auth=$authToken&$filterString';
     try {
       final response = await http.get(Uri.parse(url));
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       if(extractedData==null){
         return;
       }
+       url = 'https://shopapp-89b85-default-rtdb.firebaseio.com/products_provider.json?auth=$authToken&orderBy="creatorId"&equalTo="$userId"';
+      final favoriteResponse=await http.get(Uri.parse(url));
+      final favoriteData=json.decode(favoriteResponse.body);
       final List<Product> loadedProducts = [];
       // ab kya hoga ki jo bhi data ase me product h uske liye loop chalega jisme prodID wounique id h jo
       // firebase ka realtime database prrovide krwa rha h
@@ -123,7 +130,7 @@ class Products with ChangeNotifier {
           title: prodData['title'],
           description: prodData['description'],
           price: prodData['price'],
-          isFavorite: prodData['isFavorite'],
+          isFavorite: favoriteData==null? false : favoriteData[prodId]?? false,
           imageUrl: prodData['imageUrl'],
         ));
       });
@@ -136,8 +143,8 @@ class Products with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
-    const url =
-        'https://shopapp-89b85-default-rtdb.firebaseio.com/products_provider.json';
+    final url =
+        'https://shopapp-89b85-default-rtdb.firebaseio.com/products_provider.json?auth=$authToken';
       try{
       final response = await http.post(
       Uri.parse(url),
@@ -147,6 +154,7 @@ class Products with ChangeNotifier {
         'imageUrl': product.imageUrl,
         'price': product.price,
         'isFavorite': product.isFavorite,
+        'creatorId':userId,
       }),);
        final newProduct = Product(
       id: json.decode(response.body)['name'],
@@ -155,6 +163,7 @@ class Products with ChangeNotifier {
       description: product.description,
       price: product.price,
       imageUrl: product.imageUrl,
+
     );
     _items.add(newProduct);
     notifyListeners();
